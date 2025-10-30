@@ -14,7 +14,7 @@ import kotlinx.coroutines.launch
 
 @OptIn(ExperimentalCoroutinesApi::class)
 class NoteViewModel(application: Application) : AndroidViewModel(application) {
-    private val noteDao: NoteDao = AppDatabase.getDatabase(application).noteDao()
+    private val noteDao: NoteDao = AppDatabase.getDatabase(application.applicationContext).noteDao()
 
     // Track what the user is searching for
     private val _searchQuery = MutableStateFlow("")
@@ -38,13 +38,18 @@ class NoteViewModel(application: Application) : AndroidViewModel(application) {
             query.isNotBlank() -> noteDao.searchNotes(query)
             // Just category
             category != null -> noteDao.getNotesByCategory(category)
-            // No filters
+            // No filters - show everything
             else -> noteDao.getAllNotes()
         }
     }
 
-    // NEW: All notes WITH their tags
-    val allNotesWithTags: Flow<List<NoteWithTags>> = noteDao.getAllNotesWithTags()
+    // NEW: All notes WITH their tags - supports search
+    val allNotesWithTags: Flow<List<NoteWithTags>> = searchQuery.flatMapLatest { query ->
+        when {
+            query.isNotBlank() -> noteDao.searchNotesWithTags(query)
+            else -> noteDao.getAllNotesWithTags()
+        }
+    }
 
     // NEW: All available categories
     val allCategories: Flow<List<String>> = noteDao.getAllCategories()

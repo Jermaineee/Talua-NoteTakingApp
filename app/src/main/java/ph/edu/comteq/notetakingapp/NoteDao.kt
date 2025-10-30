@@ -30,8 +30,8 @@ interface NoteDao {
     @Query("DELETE FROM notes")
     suspend fun deleteAllNotes()
 
-    // Search with Category (now sorted using new updated_at field)
-    @Query("SELECT * FROM notes WHERE title LIKE '%' || :searchQuery || '%' OR content LIKE '%' || :searchQuery || '%' ORDER BY updated_at DESC")
+    // Search notes
+    @Query("SELECT * FROM notes WHERE title LIKE '%' || :searchQuery || '%' OR content LIKE '%' || :searchQuery || '%' ORDER BY id DESC")
     fun searchNotes(searchQuery: String): Flow<List<Note>>
 
     // NEW: Search by category
